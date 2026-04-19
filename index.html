@@ -1,74 +1,117 @@
-<script type="module">
-    import * as webllm from "https://esm.run/@mlc-ai/web-llm";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArcadeLLM | Local AI</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f0f0f; color: #e0e0e0; display: flex; flex-direction: column; height: 100vh; }
+        header { padding: 15px 20px; background: #1a1a1a; border-bottom: 2px solid #00d1b2; display: flex; justify-content: space-between; align-items: center; }
+        header h1 { margin: 0; font-size: 1.5rem; color: #00d1b2; letter-spacing: 2px; text-transform: uppercase; }
+        #status { font-size: 10px; text-transform: uppercase; color: #888; }
+        #chat-box { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        .msg { padding: 12px 18px; border-radius: 12px; max-width: 80%; line-height: 1.5; font-size: 15px; }
+        .user { align-self: flex-end; background: #007bff; color: white; border-bottom-right-radius: 2px; }
+        .ai { align-self: flex-start; background: #2a2a2a; border: 1px solid #333; border-bottom-left-radius: 2px; }
+        #controls { padding: 20px; background: #1a1a1a; display: flex; gap: 10px; border-top: 1px solid #333; }
+        input { flex: 1; padding: 14px; border-radius: 8px; border: 1px solid #444; background: #0f0f0f; color: white; outline: none; }
+        input:focus { border-color: #00d1b2; }
+        button { padding: 0 25px; border-radius: 8px; border: none; background: #00d1b2; color: #0f0f0f; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        button:hover { background: #00f0ce; }
+        button:disabled { background: #444; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>ArcadeLLM</h1>
+        <div id="status">INITIALIZING...</div>
+    </header>
 
-    const status = document.getElementById("status");
-    const btn = document.getElementById("send-btn");
-    const input = document.getElementById("user-input");
-    const chatBox = document.getElementById("chat-box");
+    <div id="chat-box">
+        <div class="msg ai">Welcome to <strong>ArcadeLLM</strong>. I run entirely in your browser. <br><br>Preparing the environment...</div>
+    </div>
 
-    // This model is much better at talking like a human
-    const selectedModel = "gemma-2b-it-q4f32_1-MLC"; 
+    <div id="controls">
+        <input type="text" id="user-input" placeholder="Ask ArcadeLLM anything..." disabled>
+        <button id="send-btn" disabled>SEND</button>
+    </div>
 
-    const engine = new webllm.MLCEngine();
+    <script type="module">
+        import * as webllm from "https://esm.run/@mlc-ai/web-llm";
 
-    // The "Personality" - This makes it act natural
-    const chatHistory = [
-        { role: "system", content: "You are a helpful, natural-sounding AI assistant. Give concise, friendly answers." }
-    ];
+        const status = document.getElementById("status");
+        const btn = document.getElementById("send-btn");
+        const input = document.getElementById("user-input");
+        const chatBox = document.getElementById("chat-box");
 
-    engine.setInitProgressCallback((report) => {
-        status.innerText = report.text;
-    });
+        const selectedModel = "gemma-2b-it-q4f32_1-MLC"; 
 
-    async function init() {
-        try {
-            await engine.reload(selectedModel);
-            input.disabled = false;
-            btn.disabled = false;
-            status.innerText = "System: Online & Ready";
-        } catch (e) {
-            status.innerText = "WebGPU not supported or error loading.";
-        }
-    }
+        const engine = new webllm.MLCEngine();
 
-    async function send() {
-        const text = input.value;
-        if (!text) return;
-        
-        appendMsg(text, 'user');
-        chatHistory.push({ role: "user", content: text }); // Add to memory
-        input.value = "";
-        
-        const aiMsgDiv = appendMsg("...", 'ai');
-        
-        const chunks = await engine.chat.completions.create({
-            messages: chatHistory, 
-            temperature: 0.7, // Lower = more focused, Higher = more creative
-            stream: true,
+        // System Prompt: Setting the AI's identity
+        const chatHistory = [
+            { role: "system", content: "You are ArcadeLLM, a clever and helpful AI assistant hosted on an unblocked arcade site. You are friendly, concise, and natural in conversation." }
+        ];
+
+        engine.setInitProgressCallback((report) => {
+            status.innerText = report.text;
         });
 
-        let reply = "";
-        for await (const chunk of chunks) {
-            const content = chunk.choices[0]?.delta?.content || "";
-            reply += content;
-            aiMsgDiv.innerText = reply;
-            chatBox.scrollTop = chatBox.scrollHeight;
+        async function init() {
+            try {
+                await engine.reload(selectedModel);
+                input.disabled = false;
+                btn.disabled = false;
+                status.innerText = "ONLINE";
+            } catch (e) {
+                status.innerText = "WEBGPU ERROR";
+                console.error(e);
+            }
         }
-        
-        chatHistory.push({ role: "assistant", content: reply }); // AI remembers its own reply
-    }
 
-    function appendMsg(text, role) {
-        const div = document.createElement("div");
-        div.className = `msg ${role}`;
-        div.innerText = text;
-        chatBox.appendChild(div);
-        chatBox.scrollTop = chatBox.scrollHeight;
-        return div;
-    }
+        async function send() {
+            const text = input.value.trim();
+            if (!text) return;
+            
+            appendMsg(text, 'user');
+            chatHistory.push({ role: "user", content: text });
+            input.value = "";
+            
+            const aiMsgDiv = appendMsg("...", 'ai');
+            
+            try {
+                const chunks = await engine.chat.completions.create({
+                    messages: chatHistory, 
+                    temperature: 0.7,
+                    stream: true,
+                });
 
-    btn.onclick = send;
-    input.onkeypress = (e) => { if(e.key === 'Enter') send(); };
+                let reply = "";
+                for await (const chunk of chunks) {
+                    const content = chunk.choices[0]?.delta?.content || "";
+                    reply += content;
+                    aiMsgDiv.innerText = reply;
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                }
+                chatHistory.push({ role: "assistant", content: reply });
+            } catch (err) {
+                aiMsgDiv.innerText = "Error generating response. Try refreshing.";
+            }
+        }
 
-    init();
-</script>
+        function appendMsg(text, role) {
+            const div = document.createElement("div");
+            div.className = `msg ${role}`;
+            div.innerText = text;
+            chatBox.appendChild(div);
+            chatBox.scrollTop = chatBox.scrollHeight;
+            return div;
+        }
+
+        btn.onclick = send;
+        input.onkeypress = (e) => { if(e.key === 'Enter') send(); };
+
+        init();
+    </script>
+</body>
+</html>
