@@ -11,22 +11,20 @@
             --text-main: #ececec;
             --text-secondary: #b4b4b4;
             --input-bg: #2f2f2f;
-            --accent-emerald: #10b981; 
+            --accent-emerald: #10a37f; 
             --font-main: 'Inter', system-ui, -apple-system, sans-serif;
         }
 
         body { margin: 0; background-color: var(--main-bg); color: var(--text-main); font-family: var(--font-main); display: flex; height: 100vh; overflow: hidden; }
 
         /* Sidebar */
-        #sidebar { width: 260px; background-color: var(--sidebar-bg); display: flex; flex-direction: column; padding: 12px; border-right: 1px solid #333; z-index: 10; }
+        #sidebar { width: 260px; background-color: var(--sidebar-bg); display: flex; flex-direction: column; padding: 12px; border-right: 1px solid #333; }
         .new-chat-btn { border: 1px solid #4d4d4d; border-radius: 6px; padding: 10px; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 10px; color: white; transition: 0.2s; }
         .new-chat-btn:hover { background: #2b2b2b; border-color: var(--accent-emerald); }
 
-        /* Custom "Core" Logo */
-        .logo-box { width: 40px; height: 40px; margin: 20px auto; position: relative; display: flex; align-items: center; justify-content: center; }
-        .hex-outer { position: absolute; width: 100%; height: 100%; border: 3px solid var(--accent-emerald); clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%); animation: rotate 10s linear infinite; }
-        .hex-inner { width: 15px; height: 15px; background: var(--accent-emerald); clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%); box-shadow: 0 0 10px var(--accent-emerald); }
-        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        /* Logo Area - Drop your image here */
+        .logo-box { width: 44px; height: 44px; margin: 20px auto; display: flex; align-items: center; justify-content: center; }
+        .logo-box img { width: 100%; height: auto; border-radius: 4px; }
 
         main { flex: 1; display: flex; flex-direction: column; position: relative; }
 
@@ -36,20 +34,18 @@
         #progress-bar { width: 0%; height: 100%; background: var(--accent-emerald); transition: width 0.3s; }
 
         #chat-container { flex: 1; overflow-y: auto; display: flex; flex-direction: column; width: 100%; padding-bottom: 50px; }
-        .message-row { padding: 24px 15%; display: flex; gap: 20px; width: 100%; box-sizing: border-box; animation: slideIn 0.3s ease-out; }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .message-row { padding: 24px 15%; display: flex; gap: 20px; width: 100%; box-sizing: border-box; }
 
         .avatar { width: 32px; height: 32px; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; font-weight: bold; color: white; }
         .user .avatar { background: #5436da; } 
-        .ai .avatar { background: var(--accent-emerald); position: relative; overflow: hidden; }
-        .ai .avatar::after { content: ''; position: absolute; width: 100%; height: 100%; border: 2px solid white; opacity: 0.2; }
+        .ai .avatar { background: var(--accent-emerald); }
 
         .content { font-size: 16px; line-height: 1.6; white-space: pre-wrap; flex: 1; }
 
         footer { padding: 20px 0 40px; display: flex; justify-content: center; }
-        .input-pill { width: 85%; max-width: 768px; background: var(--input-bg); border-radius: 14px; padding: 10px 18px; display: flex; align-items: center; border: 1px solid #4d4d4d; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .input-pill { width: 85%; max-width: 768px; background: var(--input-bg); border-radius: 14px; padding: 10px 18px; display: flex; align-items: center; border: 1px solid #4d4d4d; }
         input { flex: 1; background: transparent; border: none; color: white; padding: 12px; font-size: 16px; outline: none; }
-        #send-btn { background: var(--accent-emerald); color: #000; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        #send-btn { background: var(--accent-emerald); color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; }
         #send-btn:disabled { background: #494949; color: #888; cursor: not-allowed; }
     </style>
 </head>
@@ -57,20 +53,19 @@
 
     <div id="sidebar">
         <div class="logo-box">
-            <div class="hex-outer"></div>
-            <div class="hex-inner"></div>
+            <img src="logo.png" alt="Core Logo">
         </div>
         <div class="new-chat-btn" id="new-chat-trigger"><span>+</span> New Chat</div>
-        <div style="margin-top: auto; color: var(--text-secondary); font-size: 11px; padding: 10px; text-align: center; letter-spacing: 1px;">CORE AGENT ENGINE V1.2</div>
+        <div style="margin-top: auto; color: var(--text-secondary); font-size: 11px; padding: 10px; text-align: center;">Core Agent v1.2</div>
     </div>
 
     <main>
         <div id="loader">
             <div class="loader-content" style="text-align: center;">
-                <h2 style="color: var(--accent-emerald); margin-bottom: 5px;">CORE AGENT</h2>
-                <div id="loader-text" style="font-size: 13px; color: var(--text-secondary);">Initializing Optimized Neural Path...</div>
+                <h2 style="font-weight: 600; margin-bottom: 5px;">Core Agent</h2>
+                <div id="loader-text" style="font-size: 13px; color: var(--text-secondary);">Setting up local engine...</div>
                 <div class="progress-track"><div id="progress-bar"></div></div>
-                <div style="font-size: 11px; color: #555;">Local Execution Mode (1.6GB Engine)</div>
+                <div style="font-size: 11px; color: #555;">Downloading 1.6GB (Cached locally after first load)</div>
             </div>
         </div>
 
@@ -78,8 +73,8 @@
 
         <footer>
             <div class="input-pill">
-                <input type="text" id="user-input" placeholder="Consult the Core Agent..." disabled>
-                <button id="send-btn" disabled>↑</button>
+                <input type="text" id="user-input" placeholder="Type something..." disabled>
+                <button id="send-btn" disabled>Send</button>
             </div>
         </footer>
     </main>
@@ -87,8 +82,7 @@
     <script type="module">
         import * as webllm from "https://esm.run/@mlc-ai/web-llm";
 
-        // Persona: Optimized, Independent, Expert, Direct
-        const SYSTEM_BEHAVIOR = "You are Core Agent LLM, an autonomous independent expert. You are optimistic and solution-oriented but strictly objective. You do not use sycophantic praise or flowery language. You provide direct technical and logical utility. You acknowledge objectives clearly and execute them. Avoid 'As an AI' disclaimers.";
+        const SYSTEM_BEHAVIOR = "You are Core Agent LLM. You are an independent, optimistic expert. Be direct, clear, and high-utility. Avoid sycophancy or overly formal sci-fi language. Talk like a smart, capable peer who gets things done.";
 
         const chatContainer = document.getElementById("chat-container");
         const input = document.getElementById("user-input");
@@ -111,28 +105,24 @@
                 setTimeout(() => loader.style.display = "none", 500);
                 input.disabled = false;
                 btn.disabled = false;
-                appendMessage("Core Agent Initialized. Objective identified. Standing by.", 'ai', 'C');
-            } catch (e) { console.error("WebGPU mismatch:", e); }
+                appendMessage("Core Agent is ready. What's on your mind?", 'ai', 'C');
+            } catch (e) { console.error(e); }
         }
 
         async function handleSendMessage() {
             const text = input.value.trim();
             if (!text) return;
-
             appendMessage(text, 'user', 'U');
             chatHistory.push({ role: "user", content: text });
             input.value = "";
-
             const aiRow = appendMessage("...", 'ai', 'C');
             const aiContent = aiRow.querySelector('.content');
-
             try {
                 const chunks = await engine.chat.completions.create({
                     messages: chatHistory,
-                    temperature: 0.2, // Low temp for maximum expert objectivity
+                    temperature: 0.5, // Balanced for natural but expert responses
                     stream: true,
                 });
-
                 let fullResponse = "";
                 for await (const chunk of chunks) {
                     fullResponse += chunk.choices[0]?.delta?.content || "";
@@ -140,7 +130,7 @@
                     chatContainer.scrollTop = chatContainer.scrollHeight;
                 }
                 chatHistory.push({ role: "assistant", content: fullResponse });
-            } catch (err) { aiContent.innerText = "Execution error. Protocol failed."; }
+            } catch (err) { aiContent.innerText = "Something went wrong. Let's try again."; }
         }
 
         function appendMessage(text, className, avatarChar) {
@@ -152,17 +142,15 @@
             return row;
         }
 
-        // Functional New Chat Reset
         newChatBtn.addEventListener('click', () => {
             chatContainer.innerHTML = '';
             chatHistory.length = 0;
             chatHistory.push({ role: "system", content: SYSTEM_BEHAVIOR });
-            appendMessage("Buffer cleared. New thread active. State your objective.", 'ai', 'C');
+            appendMessage("Starting a new thread. How can I help?", 'ai', 'C');
         });
 
         btn.onclick = handleSendMessage;
         input.onkeypress = (e) => { if(e.key === 'Enter') handleSendMessage(); };
-
         init();
     </script>
 </body>
