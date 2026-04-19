@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Core Agent LLM</title>
+    <title>Core LLM</title>
     <style>
         :root {
             --sidebar-bg: #000000;
@@ -18,55 +18,55 @@
         body { margin: 0; background-color: var(--main-bg); color: var(--text-main); font-family: var(--font-main); display: flex; height: 100vh; overflow: hidden; }
 
         /* Sidebar */
-        #sidebar { width: 260px; background-color: var(--sidebar-bg); display: flex; flex-direction: column; padding: 12px; border-right: 1px solid #333; }
-        .new-chat-btn { border: 1px solid #4d4d4d; border-radius: 6px; padding: 10px; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 10px; color: white; transition: 0.2s; }
+        #sidebar { width: 260px; background-color: var(--sidebar-bg); display: flex; flex-direction: column; padding: 12px; border-right: 1px solid #333; flex-shrink: 0; }
+        .logo-box { width: 50px; height: 50px; margin: 10px auto; display: flex; align-items: center; justify-content: center; }
+        .logo-box img { width: 100%; height: auto; filter: invert(1); }
+
+        .sidebar-header { font-size: 11px; color: #666; margin: 15px 5px 5px; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .new-chat-btn { border: 1px solid #4d4d4d; border-radius: 6px; padding: 10px; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 10px; color: white; transition: 0.2s; margin-bottom: 20px; }
         .new-chat-btn:hover { background: #2b2b2b; border-color: var(--accent-emerald); }
 
-        /* Logo Area - Drop your image here */
-        .logo-box { width: 44px; height: 44px; margin: 20px auto; display: flex; align-items: center; justify-content: center; }
-        .logo-box img { width: 100%; height: auto; border-radius: 4px; }
+        #chat-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; }
+        .chat-item { padding: 10px; border-radius: 6px; font-size: 13px; cursor: pointer; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: 0.2s; border: 1px solid transparent; }
+        .chat-item:hover { background: #1a1a1a; color: white; }
+        .chat-item.active { background: #2a2a2a; border-color: #444; color: white; }
 
         main { flex: 1; display: flex; flex-direction: column; position: relative; }
 
-        /* Loading Screen */
+        /* Loader */
         #loader { position: absolute; inset: 0; background: var(--main-bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; transition: opacity 0.5s ease; }
         .progress-track { width: 250px; height: 4px; background: #333; border-radius: 2px; margin: 20px 0; overflow: hidden; }
         #progress-bar { width: 0%; height: 100%; background: var(--accent-emerald); transition: width 0.3s; }
 
         #chat-container { flex: 1; overflow-y: auto; display: flex; flex-direction: column; width: 100%; padding-bottom: 50px; }
-        .message-row { padding: 24px 15%; display: flex; gap: 20px; width: 100%; box-sizing: border-box; }
-
+        .message-row { padding: 24px 10%; display: flex; gap: 20px; width: 100%; box-sizing: border-box; }
         .avatar { width: 32px; height: 32px; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; font-weight: bold; color: white; }
-        .user .avatar { background: #5436da; } 
-        .ai .avatar { background: var(--accent-emerald); }
-
+        .user .avatar { background: #5436da; } .ai .avatar { background: var(--accent-emerald); }
         .content { font-size: 16px; line-height: 1.6; white-space: pre-wrap; flex: 1; }
 
         footer { padding: 20px 0 40px; display: flex; justify-content: center; }
         .input-pill { width: 85%; max-width: 768px; background: var(--input-bg); border-radius: 14px; padding: 10px 18px; display: flex; align-items: center; border: 1px solid #4d4d4d; }
         input { flex: 1; background: transparent; border: none; color: white; padding: 12px; font-size: 16px; outline: none; }
         #send-btn { background: var(--accent-emerald); color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; }
-        #send-btn:disabled { background: #494949; color: #888; cursor: not-allowed; }
+        #send-btn:disabled { opacity: 0.5; }
     </style>
 </head>
 <body>
 
     <div id="sidebar">
-        <div class="logo-box">
-            <img src="logo.png" alt="Core Logo">
-        </div>
+        <div class="logo-box"><img src="logo.png" alt="Core"></div>
         <div class="new-chat-btn" id="new-chat-trigger"><span>+</span> New Chat</div>
-        <div style="margin-top: auto; color: var(--text-secondary); font-size: 11px; padding: 10px; text-align: center;">Core Agent v1.2</div>
+        <div class="sidebar-header">Create up to 10 chats</div>
+        <div id="chat-list"></div>
+        <div style="margin-top: auto; color: var(--text-secondary); font-size: 11px; padding: 10px; text-align: center;">Core LLM v1.5</div>
     </div>
 
     <main>
         <div id="loader">
-            <div class="loader-content" style="text-align: center;">
-                <h2 style="font-weight: 600; margin-bottom: 5px;">Core Agent</h2>
-                <div id="loader-text" style="font-size: 13px; color: var(--text-secondary);">Setting up local engine...</div>
-                <div class="progress-track"><div id="progress-bar"></div></div>
-                <div style="font-size: 11px; color: #555;">Downloading 1.6GB (Cached locally after first load)</div>
-            </div>
+            <h2 style="font-weight: 600; margin-bottom: 5px;">Core LLM</h2>
+            <div id="loader-text" style="font-size: 13px; color: var(--text-secondary);">Optimizing storage...</div>
+            <div class="progress-track"><div id="progress-bar"></div></div>
         </div>
 
         <div id="chat-container"></div>
@@ -82,17 +82,62 @@
     <script type="module">
         import * as webllm from "https://esm.run/@mlc-ai/web-llm";
 
-        const SYSTEM_BEHAVIOR = "You are Core Agent LLM. You are an independent, optimistic expert. Be direct, clear, and high-utility. Avoid sycophancy or overly formal sci-fi language. Talk like a smart, capable peer who gets things done.";
-
+        const SYSTEM_BEHAVIOR = "You are Core LLM, an independent expert. Be direct, clear, and optimistic. Talk like a capable peer.";
         const chatContainer = document.getElementById("chat-container");
         const input = document.getElementById("user-input");
         const btn = document.getElementById("send-btn");
         const progressBar = document.getElementById("progress-bar");
         const loader = document.getElementById("loader");
-        const newChatBtn = document.getElementById("new-chat-trigger");
+        const chatListEl = document.getElementById("chat-list");
 
-        const chatHistory = [{ role: "system", content: SYSTEM_BEHAVIOR }];
-        const engine = new webllm.MLCEngine();
+        let engine = new webllm.MLCEngine();
+        let currentChatId = null;
+        let allChats = JSON.parse(localStorage.getItem('core_llm_chats')) || [];
+
+        // Logic for Persistent Chats
+        function saveToStorage() {
+            localStorage.setItem('core_llm_chats', JSON.stringify(allChats));
+            renderSidebar();
+        }
+
+        function renderSidebar() {
+            chatListEl.innerHTML = '';
+            allChats.forEach((chat, index) => {
+                const div = document.createElement('div');
+                div.className = `chat-item ${currentChatId === chat.id ? 'active' : ''}`;
+                div.innerText = chat.title || `Chat ${index + 1}`;
+                div.onclick = () => loadChat(chat.id);
+                chatListEl.appendChild(div);
+            });
+        }
+
+        function loadChat(id) {
+            currentChatId = id;
+            const chat = allChats.find(c => c.id === id);
+            chatContainer.innerHTML = '';
+            chat.messages.forEach(m => {
+                if(m.role !== 'system') appendMessage(m.content, m.role === 'user' ? 'user' : 'ai', m.role === 'user' ? 'U' : 'C');
+            });
+            renderSidebar();
+        }
+
+        function startNewChat() {
+            if (allChats.length >= 10) {
+                alert("Maximum of 10 chats reached. Please delete some (Coming soon) or clear storage.");
+                return;
+            }
+            const newId = Date.now();
+            const newChat = {
+                id: newId,
+                title: "New conversation",
+                messages: [{ role: "system", content: SYSTEM_BEHAVIOR }]
+            };
+            allChats.unshift(newChat); // Add to top
+            currentChatId = newId;
+            saveToStorage();
+            loadChat(newId);
+            appendMessage("Core LLM is ready. What's on your mind?", 'ai', 'C');
+        }
 
         engine.setInitProgressCallback((report) => {
             progressBar.style.width = Math.round(report.progress * 100) + "%";
@@ -105,32 +150,38 @@
                 setTimeout(() => loader.style.display = "none", 500);
                 input.disabled = false;
                 btn.disabled = false;
-                appendMessage("Core Agent is ready. What's on your mind?", 'ai', 'C');
+                
+                if (allChats.length > 0) loadChat(allChats[0].id);
+                else startNewChat();
             } catch (e) { console.error(e); }
         }
 
         async function handleSendMessage() {
             const text = input.value.trim();
             if (!text) return;
+
+            const chat = allChats.find(c => c.id === currentChatId);
+            if(chat.messages.length === 1) chat.title = text.substring(0, 20) + "..."; // Auto-title
+
             appendMessage(text, 'user', 'U');
-            chatHistory.push({ role: "user", content: text });
+            chat.messages.push({ role: "user", content: text });
             input.value = "";
+            saveToStorage();
+
             const aiRow = appendMessage("...", 'ai', 'C');
             const aiContent = aiRow.querySelector('.content');
+
             try {
-                const chunks = await engine.chat.completions.create({
-                    messages: chatHistory,
-                    temperature: 0.5, // Balanced for natural but expert responses
-                    stream: true,
-                });
-                let fullResponse = "";
+                const chunks = await engine.chat.completions.create({ messages: chat.messages, temperature: 0.5, stream: true });
+                let reply = "";
                 for await (const chunk of chunks) {
-                    fullResponse += chunk.choices[0]?.delta?.content || "";
-                    aiContent.innerText = fullResponse;
+                    reply += chunk.choices[0]?.delta?.content || "";
+                    aiContent.innerText = reply;
                     chatContainer.scrollTop = chatContainer.scrollHeight;
                 }
-                chatHistory.push({ role: "assistant", content: fullResponse });
-            } catch (err) { aiContent.innerText = "Something went wrong. Let's try again."; }
+                chat.messages.push({ role: "assistant", content: reply });
+                saveToStorage();
+            } catch (err) { console.error(err); }
         }
 
         function appendMessage(text, className, avatarChar) {
@@ -142,16 +193,12 @@
             return row;
         }
 
-        newChatBtn.addEventListener('click', () => {
-            chatContainer.innerHTML = '';
-            chatHistory.length = 0;
-            chatHistory.push({ role: "system", content: SYSTEM_BEHAVIOR });
-            appendMessage("Starting a new thread. How can I help?", 'ai', 'C');
-        });
-
+        document.getElementById("new-chat-trigger").onclick = startNewChat;
         btn.onclick = handleSendMessage;
         input.onkeypress = (e) => { if(e.key === 'Enter') handleSendMessage(); };
+        
         init();
+        renderSidebar();
     </script>
 </body>
 </html>
